@@ -3,9 +3,9 @@ CC = gcc
 CCFLAGS = -Wall -fsanitize=address -fsanitize=undefined -fsanitize=leak
 
 # fichiers du projet
-SRC = clientAPI.c labyrinthAPI.c Labyrinthe.c
+SRC = clientAPI.c labyrinthAPI.c Labyrinth.c
 OBJ = $(SRC:.c=.o)
-EXEC = Labyrinthe
+EXEC = Labyrinth
 
 
 # règle initiale
@@ -14,7 +14,7 @@ all: $(EXEC)
 # dépendance des .h
 clientAPI.o: clientAPI.h 
 labyrinthAPI.o: clientAPI.h labyrinthAPI.h
-Labyrinthe.o: labyrinthAPI.h
+Labyrinth.o: labyrinthAPI.h Labyrinth.h
 
 # règles de compilation
 %.o: %.c
