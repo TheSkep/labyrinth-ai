@@ -160,3 +160,115 @@ void compute_reachable(t_labyrinth* lab, int sx, int sy, int* reachable, int* di
 }
 
 // ------------------------------------------------------- //
+
+int find_treasure(const t_labyrinth* lab, int treasure) {
+
+    if (treasure <= 0) return -1;
+
+    int n = lab->sizeX * lab->sizeY;
+    for (int i = 0; i < n; i++)
+        if (lab->labyrinth[i].treasure == treasure) return i;
+
+    return -1;
+}
+
+// ------------------------------------------------------- //
+
+int next_treasure(int player, int current) {
+    return (player == 0) ? current + 1 : current - 1;
+}
+
+// ------------------------------------------------------- //
+
+int init_labyrinth(t_labyrinth* lab, int sizeX, int sizeY, char* labyData) {
+
+    int me = getLabyrinth(labyData);   /* Vaut 0 si on commence, 1 sinon */
+
+    lab->sizeX = sizeX;
+    lab->sizeY = sizeY;
+    lab->me    = me;
+    lab->labyrinth = malloc(sizeof(t_tile) * sizeX * sizeY);
+
+    /* On lit les sizeX*sizeY tuiles du plateau */
+    int offset = 0;
+    for (int i = 0; i < sizeX * sizeY; i++) {
+        int consumed;
+        sscanf(labyData + offset, "%d %d %d %d %d%n",
+               &lab->labyrinth[i].north,
+               &lab->labyrinth[i].east,
+               &lab->labyrinth[i].south,
+               &lab->labyrinth[i].west,
+               &lab->labyrinth[i].treasure,
+               &consumed);
+        offset += consumed;
+    }
+
+    /* Puis la tuile supplémentaire, juste après */
+    sscanf(labyData + offset, "%d %d %d %d %d",
+           &lab->extra.north,
+           &lab->extra.east,
+           &lab->extra.south,
+           &lab->extra.west,
+           &lab->extra.treasure);
+
+    if (me == 0) {
+        lab->GoodGuy.x = 0;         lab->GoodGuy.y = 0;
+        lab->BadGuy.x  = sizeX - 1; lab->BadGuy.y  = sizeY - 1;
+        lab->myTreasure  = 1;
+        lab->oppTreasure = NB_TREASURES;
+    } else {
+        lab->GoodGuy.x = sizeX - 1; lab->GoodGuy.y = sizeY - 1;
+        lab->BadGuy.x  = 0;         lab->BadGuy.y  = 0;
+        lab->myTreasure  = NB_TREASURES;
+        lab->oppTreasure = 1;
+    }
+
+    lab->lastType  = -1;
+    lab->lastIndex = -1;
+
+    return me;
+}
+
+// ------------------------------------------------------- //
+
+void update_labyrinth(t_labyrinth* lab, const char* move, const char* msg, int who) {
+
+    /* On lit tous les entiers du coup */
+    int vals[128];
+    int n = 0, consumed;
+    const char* p = move;
+
+    while (n < 128 && sscanf(p, "%d%n", &vals[n], &consumed) == 1) {
+        n++;
+        p += consumed;
+    }
+
+    if (n < 5) return;   /* Coup mal formé : rien à faire */
+
+    int type     = vals[0];
+    int index    = vals[1];
+    int rotation = vals[2];
+
+    /* On applique l'insertion */
+    apply_insertion(lab, type, index, rotation);
+
+    int dx = vals[n - 2];
+    int dy = vals[n - 1];
+
+    if (who == 0) { lab->GoodGuy.x = dx; lab->GoodGuy.y = dy; }
+    else { lab->BadGuy.x  = dx; lab->BadGuy.y  = dy; }
+
+    /* Le serveur renvoie la nouvelle tuile extra et le prochain trésor */
+    int en, ee, es, ew, et, nextItem;
+    if (msg && sscanf(msg, "%d %d %d %d %d %d", &en, &ee, &es, &ew, &et, &nextItem) == 6) {
+
+        lab->extra.north = en;  lab->extra.east  = ee;
+        lab->extra.south = es;  lab->extra.west  = ew;
+        lab->extra.treasure = et;
+
+        if (who == 0) lab->myTreasure  = nextItem;
+        else          lab->oppTreasure = nextItem;
+    }
+}
+
+// ------------------------------------------------------- //
