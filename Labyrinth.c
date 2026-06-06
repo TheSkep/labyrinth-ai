@@ -106,3 +106,57 @@ void apply_insertion(t_labyrinth* lab, int type, int index, int rotation) {
 }
 
 // ------------------------------------------------------- //
+
+int are_connected(t_labyrinth* lab, int x1, int y1, int x2, int y2) {
+
+    t_tile* a = tile_at(lab, x1, y1);
+    t_tile* b = tile_at(lab, x2, y2);
+
+    if (x2 == x1 + 1 && y2 == y1) return !a->east  && !b->west;
+    if (x2 == x1 - 1 && y2 == y1) return !a->west  && !b->east;
+    if (y2 == y1 + 1 && x2 == x1) return !a->south && !b->north;
+    if (y2 == y1 - 1 && x2 == x1) return !a->north && !b->south;
+
+    return 0;
+}
+
+// ------------------------------------------------------- //
+
+void compute_reachable(t_labyrinth* lab, int sx, int sy, int* reachable, int* dist) {
+
+    int n = lab->sizeX * lab->sizeY;
+    for (int i = 0; i < n; i++) { reachable[i] = 0; dist[i] = -1; }
+
+    int* queue = malloc(n * sizeof(int));
+    int head = 0, tail = 0;
+
+    int start = tile_index(lab, sx, sy);
+    reachable[start] = 1;
+    dist[start] = 0;
+    queue[tail++] = start;
+
+    int dx[4] = { 1, -1, 0, 0 };
+    int dy[4] = { 0, 0, 1, -1 };
+
+    while (head < tail) {
+        int cur = queue[head++];
+        int x = cur % lab->sizeX;
+        int y = cur / lab->sizeX;
+
+        for (int d = 0; d < 4; d++) {
+            int nx = x + dx[d], ny = y + dy[d];
+            if (nx < 0 || nx >= lab->sizeX || ny < 0 || ny >= lab->sizeY) continue;
+
+            int ni = tile_index(lab, nx, ny);
+            if (!reachable[ni] && are_connected(lab, x, y, nx, ny)) {
+                reachable[ni] = 1;
+                dist[ni] = dist[cur] + 1;
+                queue[tail++] = ni;
+            }
+        }
+    }
+
+    free(queue);
+}
+
+// ------------------------------------------------------- //
