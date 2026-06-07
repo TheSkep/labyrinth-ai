@@ -36,6 +36,55 @@ static void copy_board(t_labyrinth* dst, const t_labyrinth* src) {
 
 // ------------------------------------------------------- //
 
+static int wall_cost_bfs(t_labyrinth* lab, int sx, int sy, int cible) {
+    int n = lab->sizeX * lab->sizeY, cap = 4 * n + 4;
+    int cost[n], vu[n], dq[cap];
+    for (int i = 0; i < n; i++) { cost[i] = BIG; vu[i] = 0; }
+
+    int head = 0, tail = 0, nb = 0;
+    int debut = tile_index(lab, sx, sy);
+    cost[debut] = 0;
+    dq[tail] = debut; tail = (tail + 1) % cap; nb++;
+
+    int dx[4] = { 1, -1, 0, 0 }, dy[4] = { 0, 0, 1, -1 };
+    while (nb > 0) {
+        int cur = dq[head]; head = (head + 1) % cap; nb--;
+        if (vu[cur]) continue;
+        vu[cur] = 1;
+        int x = cur % lab->sizeX, y = cur / lab->sizeX;
+        for (int d = 0; d < 4; d++) {
+            int nx = x + dx[d], ny = y + dy[d];
+            if (nx < 0 || nx >= lab->sizeX || ny < 0 || ny >= lab->sizeY) continue;
+            int ni = tile_index(lab, nx, ny);
+            int w  = are_connected(lab, x, y, nx, ny) ? 0 : 1;
+            if (cost[cur] + w < cost[ni]) {
+                cost[ni] = cost[cur] + w;
+                if (w == 0) { head = (head - 1 + cap) % cap; dq[head] = ni; }
+                else        { dq[tail] = ni; tail = (tail + 1) % cap; }
+                nb++;
+            }
+        }
+    }
+    return cost[cible];
+}
+
+// ------------------------------------------------------- //
+
+static int evaluate(t_labyrinth* lab) {
+    int adv = 1 - lab->me;
+    if (player_won(lab->me, lab->myTreasure)) return  BIG;
+    if (player_won(adv, lab->oppTreasure)) return -BIG;
+
+    int score = W_TRESOR * (treasures_collected(lab->me, lab->myTreasure) - treasures_collected(adv, lab->oppTreasure));
+    int tp = find_treasure(lab, lab->myTreasure);
+    int to = find_treasure(lab, lab->oppTreasure);
+    if (tp != -1) score -= W_MUR * wall_cost_bfs(lab, lab->GoodGuy.x, lab->GoodGuy.y, tp);
+    if (to != -1) score += W_MUR * wall_cost_bfs(lab, lab->BadGuy.x,  lab->BadGuy.y,  to);
+    return score;
+}
+
+// ------------------------------------------------------- //
+
 static void move_pawn(t_labyrinth* lab, int qui) {
     t_player* pion   = (qui == 0) ? &lab->GoodGuy : &lab->BadGuy;
     int       joueur = (qui == 0) ? lab->me : 1 - lab->me;
