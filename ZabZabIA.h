@@ -3,4 +3,6 @@
 
 #include "Labyrinth.h"
 
+void find_best_move(t_labyrinth* lab, char* moveText);
+
 #endif

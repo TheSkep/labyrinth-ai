@@ -22,7 +22,7 @@ t_tile rotate_tile(t_tile t, int nb) {
     nb = ((nb % 4) + 4) % 4;
 
     for (int k = 0; k < nb; k++) {
-        t_tile r = t;          /* On recopie aussi le trésor */
+        t_tile r = t;
         r.north = t.west;
         r.east  = t.north;
         r.south = t.east;
@@ -45,7 +45,7 @@ void apply_insertion(t_labyrinth* lab, int type, int index, int rotation) {
 
     switch (type) {
 
-        case INSERT_LINE_LEFT:  /* On glisse la ligne vers la droite */
+        case INSERT_LINE_LEFT: /* On glisse la ligne vers la droite */
             popped = *tile_at(lab, sx - 1, index);
             for (int x = sx - 1; x >= 1; x--)
                 *tile_at(lab, x, index) = *tile_at(lab, x - 1, index);
@@ -54,7 +54,7 @@ void apply_insertion(t_labyrinth* lab, int type, int index, int rotation) {
             for (int p = 0; p < 2; p++)
                 if (players[p]->y == index) {
                     players[p]->x++;
-                    if (players[p]->x == sx) players[p]->x = 0;  /* Pion expulsé */
+                    if (players[p]->x == sx) players[p]->x = 0; /* Pion expulsé */
                 }
             break;
 
@@ -67,7 +67,7 @@ void apply_insertion(t_labyrinth* lab, int type, int index, int rotation) {
             for (int p = 0; p < 2; p++)
                 if (players[p]->y == index) {
                     players[p]->x--;
-                    if (players[p]->x < 0) players[p]->x = sx - 1;  /* Pion expulsé */
+                    if (players[p]->x < 0) players[p]->x = sx - 1; /* Pion expulsé */
                 }
             break;
 
@@ -80,7 +80,7 @@ void apply_insertion(t_labyrinth* lab, int type, int index, int rotation) {
             for (int p = 0; p < 2; p++)
                 if (players[p]->x == index) {
                     players[p]->y++;
-                    if (players[p]->y == sy) players[p]->y = 0;  /* Pion expulsé */
+                    if (players[p]->y == sy) players[p]->y = 0; /* Pion expulsé */
                 }
             break;
 
@@ -93,17 +93,17 @@ void apply_insertion(t_labyrinth* lab, int type, int index, int rotation) {
             for (int p = 0; p < 2; p++)
                 if (players[p]->x == index) {
                     players[p]->y--;
-                    if (players[p]->y < 0) players[p]->y = sy - 1;  /* Pion expulsé */
+                    if (players[p]->y < 0) players[p]->y = sy - 1; /* Pion expulsé */
                 }
             break;
 
         default:
-            return;   /* Coup invalide : rien à faire */
+            return; /* Coup invalide : rien à faire */
     }
 
-    lab->extra     = popped;   /* La tuile expulsée devient la nouvelle extra */
+    lab->extra     = popped; /* La tuile expulsée devient la nouvelle extra */
     lab->lastType  = type;
-    lab->lastIndex = index;
+    lab->lastIndex = index; /* On recopie aussi le trésor */
 }
 
 // ------------------------------------------------------- //
@@ -183,7 +183,7 @@ int next_treasure(int player, int current) {
 
 int init_labyrinth(t_labyrinth* lab, int sizeX, int sizeY, char* labyData) {
 
-    int me = getLabyrinth(labyData);   /* Vaut 0 si on commence, 1 sinon */
+    int me = getLabyrinth(labyData); /* Vaut 0 si on commence, 1 sinon */
 
     lab->sizeX = sizeX;
     lab->sizeY = sizeY;
@@ -244,7 +244,7 @@ void update_labyrinth(t_labyrinth* lab, const char* move, const char* msg, int w
         p += consumed;
     }
 
-    if (n < 5) return;   /* Coup mal formé : rien à faire */
+    if (n < 5) return; /* Coup mal formé : rien à faire */
 
     int type     = vals[0];
     int index    = vals[1];
@@ -324,8 +324,6 @@ int main(int argc, char** argv) {
     t_labyrinth lab;
     init_labyrinth(&lab, sizeX, sizeY, labyData);
 
-    zabzabia_init(sizeX, sizeY);
-
     printLabyrinth();
 
     int turn = 0;
@@ -353,7 +351,6 @@ int main(int argc, char** argv) {
 
     closeConnection();
     free_labyrinth(&lab);
-    zabzabia_free();
     free(labyData);
 
     return 0;

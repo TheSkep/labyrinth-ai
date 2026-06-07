@@ -200,3 +200,32 @@ static void build_move(t_labyrinth* lab, int type, int index, int rot, char* out
     free(cl.labyrinth);
 }
 
+// ------------------------------------------------------- //
+
+void find_best_move(t_labyrinth* lab, char* moveText) {
+    fin_du_temps = clock() + (clock_t)(TIME_LIMIT * CLOCKS_PER_SEC);
+
+    int types[256], indices[256];
+    int c = list_insertions(lab, types, indices);
+    int bType = types[0], bIdx = indices[0], bRot = 0;
+
+    for (int prof = 1; ; prof++) {
+        int meilleur = -BIG - 1, t = bType, idx = bIdx, rot = bRot;
+        for (int i = 0; i < c; i++)
+            for (int r = 0; r < 4; r++) {
+                t_labyrinth cl;
+                copy_board(&cl, lab);
+                apply_insertion(&cl, types[i], indices[i], r);
+                move_pawn(&cl, 0);
+                int v = alpha_beta(&cl, prof - 1, -BIG - 1, BIG + 1, 0);
+                free(cl.labyrinth);
+                if (v > meilleur) { meilleur = v; t = types[i]; idx = indices[i]; rot = r; }
+            }
+
+        if (clock() > fin_du_temps) break; /* Profondeur interrompue : on garde la précédente */
+        bType = t; bIdx = idx; bRot = rot;
+        if (meilleur >= BIG) break;
+    }
+
+    build_move(lab, bType, bIdx, bRot, moveText);
+}
