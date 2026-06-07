@@ -155,3 +155,48 @@ static int alpha_beta(t_labyrinth* lab, int prof, int alpha, int beta, int nous)
     return best;
 }
 
+// ------------------------------------------------------- //
+
+static void build_move(t_labyrinth* lab, int type, int index, int rot, char* out) {
+    t_labyrinth cl;
+    copy_board(&cl, lab);
+    apply_insertion(&cl, type, index, rot);
+
+    int n = cl.sizeX * cl.sizeY;
+    int vu[n], dist[n];
+    compute_reachable(&cl, cl.GoodGuy.x, cl.GoodGuy.y, vu, dist);
+    int len = sprintf(out, "%d %d %d", type, index, rot);
+    int pos = find_treasure(&cl, cl.myTreasure);
+
+    if (pos == -1 || !vu[pos]) { /* Rien à prendre : on se rapproche */
+        int dx = cl.GoodGuy.x, dy = cl.GoodGuy.y;
+        if (pos != -1) {
+            int tx = pos % cl.sizeX, ty = pos / cl.sizeX, bd = BIG;
+            for (int i = 0; i < n; i++)
+                if (vu[i]) {
+                    int md = abs_int(i % cl.sizeX - tx) + abs_int(i / cl.sizeX - ty);
+                    if (md < bd) { bd = md; dx = i % cl.sizeX; dy = i / cl.sizeX; }
+                }
+        }
+        sprintf(out + len, " %d %d", dx, dy);
+        free(cl.labyrinth);
+        return;
+    }
+
+    int x = pos % cl.sizeX, y = pos / cl.sizeX; /* On prend le premier trésor */
+    len += sprintf(out + len, " %d %d", x, y);
+    int cible = next_treasure(cl.me, cl.myTreasure);
+
+    int budget = MAX_EXTRA_STEPS; /* Puis on enchaîne sous 10 cases */
+    while (!player_won(cl.me, cible)) {
+        compute_reachable(&cl, x, y, vu, dist);
+        int suiv = find_treasure(&cl, cible);
+        if (suiv == -1 || !vu[suiv] || dist[suiv] > budget) break;
+        budget -= dist[suiv];
+        x = suiv % cl.sizeX; y = suiv / cl.sizeX;
+        len += sprintf(out + len, " %d %d", x, y);
+        cible = next_treasure(cl.me, cible);
+    }
+    free(cl.labyrinth);
+}
+
