@@ -127,3 +127,31 @@ static int list_insertions(const t_labyrinth* lab, int* types, int* indices) {
     return c;
 }
 
+// ------------------------------------------------------- //
+
+static int alpha_beta(t_labyrinth* lab, int prof, int alpha, int beta, int nous) {
+    int adv = 1 - lab->me;
+    if (player_won(lab->me, lab->myTreasure)) return  BIG;
+    if (player_won(adv,     lab->oppTreasure)) return -BIG;
+    if (prof == 0 || clock() > fin_du_temps) return evaluate(lab);
+
+    int types[256], indices[256];
+    int c = list_insertions(lab, types, indices);
+    int best = nous ? -BIG - 1 : BIG + 1;
+
+    for (int i = 0; i < c; i++)
+        for (int r = 0; r < 4; r++) {
+            t_labyrinth cl;
+            copy_board(&cl, lab);
+            apply_insertion(&cl, types[i], indices[i], r);
+            move_pawn(&cl, nous ? 0 : 1);
+            int v = alpha_beta(&cl, prof - 1, alpha, beta, !nous);
+            free(cl.labyrinth);
+
+            if (nous) { if (v > best) best = v; if (best > alpha) alpha = best; }
+            else      { if (v < best) best = v; if (best < beta)  beta  = best; }
+            if (alpha >= beta) return best;
+        }
+    return best;
+}
+
