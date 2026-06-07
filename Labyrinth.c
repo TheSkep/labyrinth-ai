@@ -1,5 +1,6 @@
 #include "labyrinthAPI.h"
 #include "Labyrinth.h"
+#include "ZabZabIA.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -269,6 +270,93 @@ void update_labyrinth(t_labyrinth* lab, const char* move, const char* msg, int w
         if (who == 0) lab->myTreasure  = nextItem;
         else          lab->oppTreasure = nextItem;
     }
+}
+
+// ------------------------------------------------------- //
+
+void print_labyrinth_data(const t_labyrinth* lab) {
+
+    for (int y = 0; y < lab->sizeY; y++) {
+        for (int x = 0; x < lab->sizeX; x++) {
+            const t_tile* t = &lab->labyrinth[y * lab->sizeX + x];
+            printf("%d%d%d%d%2d ", t->north, t->east, t->south, t->west, t->treasure);
+        }
+        printf("\n");
+    }
+
+    printf("extra : %d%d%d%d %d\n",
+           lab->extra.north, lab->extra.east, lab->extra.south,
+           lab->extra.west, lab->extra.treasure);
+    printf("nous (%d,%d) cherchons %d | adv (%d,%d) cherche %d\n",
+           lab->GoodGuy.x, lab->GoodGuy.y, lab->myTreasure,
+           lab->BadGuy.x,  lab->BadGuy.y,  lab->oppTreasure);
+}
+
+// ------------------------------------------------------- //
+
+void free_labyrinth(t_labyrinth* lab) {
+    free(lab->labyrinth);
+    lab->labyrinth = NULL;
+}
+
+// ------------------------------------------------------- //
+
+static t_return_code PlayMove(t_labyrinth* lab, char* move, char* msg) {
+
+    find_best_move(lab, move);
+
+    return sendMove(move, msg);
+}
+
+// ------------------------------------------------------- //
+
+int main(int argc, char** argv) {
+
+    char labyrinthName[50];
+    int  sizeX, sizeY;
+    char move[256], msg[256];
+
+    connectToServer("localhost", 1234, "ZabZabIA");
+    waitForLabyrinth("TRAINING BASIC timeout=1000", labyrinthName, &sizeX, &sizeY);
+
+    char* labyData = malloc((sizeX * sizeY + 5) * 11 * sizeof(char));
+
+    t_labyrinth lab;
+    init_labyrinth(&lab, sizeX, sizeY, labyData);
+
+    zabzabia_init(sizeX, sizeY);
+
+    printLabyrinth();
+
+    int turn = 0;
+    t_return_code ended = NORMAL_MOVE;
+
+    while (ended == NORMAL_MOVE) {
+
+        if (turn % 2 == lab.me) {            /* Notre tour */
+            ended = PlayMove(&lab, move, msg);
+            if (ended != LOSING_MOVE)
+                update_labyrinth(&lab, move, msg, 0);
+        } else {                             /* Tour de l'adversaire */
+            ended = getMove(move, msg);
+            if (ended != LOSING_MOVE)
+                update_labyrinth(&lab, move, msg, 1);
+        }
+
+        if (ended == NORMAL_MOVE) printLabyrinth();
+
+        turn++;
+    }
+
+    if (ended == WINNING_MOVE) printf("ZabZabIA a gagne !\n");
+    else printf("ZabZabIA a perdu : %s\n", msg);
+
+    closeConnection();
+    free_labyrinth(&lab);
+    zabzabia_free();
+    free(labyData);
+
+    return 0;
 }
 
 // ------------------------------------------------------- //

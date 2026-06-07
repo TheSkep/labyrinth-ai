@@ -2,30 +2,28 @@
 CC = gcc
 CCFLAGS = -Wall -fsanitize=address -fsanitize=undefined -fsanitize=leak
 
-# fichiers du projet
-SRC = clientAPI.c labyrinthAPI.c Labyrinth.c
-OBJ = $(SRC:.c=.o)
-EXEC = Labyrinth
+# fichiers communs (API)
+COMMON = clientAPI.o labyrinthAPI.o
 
+# regle initiale : on construit le programme
+all: Labyrinth
 
-# règle initiale
-all: $(EXEC)
-
-# dépendance des .h
-clientAPI.o: clientAPI.h 
+# dependance des .h
+clientAPI.o: clientAPI.h
 labyrinthAPI.o: clientAPI.h labyrinthAPI.h
-Labyrinth.o: labyrinthAPI.h Labyrinth.h
+Labyrinth.o: labyrinthAPI.h Labyrinth.h ZabZabIA.h
+ZabZabIA.o: labyrinthAPI.h Labyrinth.h ZabZabIA.h
 
-# règles de compilation
+# regle generique de compilation
 %.o: %.c
 	$(CC) $(CCFLAGS) -o $@ -c $<
-	
-# règles d'édition de liens
-$(EXEC): $(OBJ)
-	$(CC) $(CCFLAGS) -o $@ $^ $(LIBS) $(LIBSDIR)
 
-# règles supplémentaires
+# le programme : main + PlayMove (Labyrinth.c) + alpha-beta (ZabZabIA.c)
+Labyrinth: $(COMMON) Labyrinth.o ZabZabIA.o
+	$(CC) $(CCFLAGS) -o $@ $^
+
+# regles supplementaires
 clean:
 	rm -f *.o
 mproper:
-	rm -f $(EXEC) *.o
+	rm -f Labyrinth *.o
