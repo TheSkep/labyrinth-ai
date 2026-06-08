@@ -5,7 +5,7 @@
 #include <time.h>
 
 #define BIG 1000000
-#define TIME_LIMIT 8.0
+#define TIME_LIMIT 4
 #define W_TRESOR 10000
 #define W_MUR 60
 
@@ -79,7 +79,7 @@ static int evaluate(t_labyrinth* lab) {
     int tp = find_treasure(lab, lab->myTreasure);
     int to = find_treasure(lab, lab->oppTreasure);
     if (tp != -1) score -= W_MUR * wall_cost_bfs(lab, lab->GoodGuy.x, lab->GoodGuy.y, tp);
-    if (to != -1) score += W_MUR * wall_cost_bfs(lab, lab->BadGuy.x,  lab->BadGuy.y,  to);
+    if (to != -1) score += 1.1 * W_MUR * wall_cost_bfs(lab, lab->BadGuy.x,  lab->BadGuy.y,  to);
     return score;
 }
 

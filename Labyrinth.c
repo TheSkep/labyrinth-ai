@@ -244,7 +244,7 @@ void update_labyrinth(t_labyrinth* lab, const char* move, const char* msg, int w
         p += consumed;
     }
 
-    if (n < 5) return; /* Coup mal formé : rien à faire */
+    if (n < 3) return; /* Coup vraiment mal formé : rien à faire */
 
     int type     = vals[0];
     int index    = vals[1];
@@ -253,11 +253,12 @@ void update_labyrinth(t_labyrinth* lab, const char* move, const char* msg, int w
     /* On applique l'insertion */
     apply_insertion(lab, type, index, rotation);
 
-    int dx = vals[n - 2];
-    int dy = vals[n - 1];
-
-    if (who == 0) { lab->GoodGuy.x = dx; lab->GoodGuy.y = dy; }
-    else { lab->BadGuy.x  = dx; lab->BadGuy.y  = dy; }
+    if (n >= 5) {
+        int dx = vals[n - 2];
+        int dy = vals[n - 1];
+        if (who == 0) { lab->GoodGuy.x = dx; lab->GoodGuy.y = dy; }
+        else          { lab->BadGuy.x  = dx; lab->BadGuy.y  = dy; }
+    }
 
     /* Le serveur renvoie la nouvelle tuile extra et le prochain trésor */
     int en, ee, es, ew, et, nextItem;
@@ -317,7 +318,7 @@ int main(int argc, char** argv) {
     char move[256], msg[256];
 
     connectToServer("localhost", 1234, "ZabZabIA");
-    waitForLabyrinth("TRAINING BASIC timeout=1000", labyrinthName, &sizeX, &sizeY);
+    waitForLabyrinth("", labyrinthName, &sizeX, &sizeY);
 
     char* labyData = malloc((sizeX * sizeY + 5) * 11 * sizeof(char));
 
