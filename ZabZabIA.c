@@ -197,6 +197,21 @@ static void build_move(t_labyrinth* lab, int type, int index, int rot, char* out
         len += sprintf(out + len, " %d %d", x, y);
         cible = next_treasure(cl.me, cible);
     }
+
+    if (!player_won(cl.me, cible)) { /* Se rapprocher du trésor suivant s'il n'est pas accessible */
+        compute_reachable(&cl, x, y, vu, dist);
+        int suiv = find_treasure(&cl, cible);
+        if (suiv != -1) {
+            int tx = suiv % cl.sizeX, ty = suiv / cl.sizeX;
+            int bx = x, by = y, bd = abs_int(x - tx) + abs_int(y - ty);
+            for (int i = 0; i < n; i++)
+                if (vu[i] && dist[i] <= budget) {
+                    int md = abs_int(i % cl.sizeX - tx) + abs_int(i / cl.sizeX - ty);
+                    if (md < bd) { bd = md; bx = i % cl.sizeX; by = i / cl.sizeX; }
+                }
+            if (bx != x || by != y) sprintf(out + len, " %d %d", bx, by);
+        }
+    }
     free(cl.labyrinth);
 }
 
