@@ -225,6 +225,14 @@ void find_best_move(t_labyrinth* lab, char* moveText) {
     int bType = types[0], bIdx = indices[0], bRot = 0;
 
     for (int prof = 1; ; prof++) {
+        /* Tester d'abord le meilleur coup de la profondeur précédente */
+        for (int i = 0; i < c; i++)
+            if (types[i] == bType && indices[i] == bIdx) {
+                int t0 = types[0]; types[0] = types[i]; types[i] = t0;
+                int i0 = indices[0]; indices[0] = indices[i]; indices[i] = i0;
+                break;
+            }
+
         int meilleur = -BIG - 1, t = bType, idx = bIdx, rot = bRot;
         for (int i = 0; i < c; i++)
             for (int r = 0; r < 4; r++) {
@@ -232,7 +240,7 @@ void find_best_move(t_labyrinth* lab, char* moveText) {
                 copy_board(&cl, lab);
                 apply_insertion(&cl, types[i], indices[i], r);
                 move_pawn(&cl, 0);
-                int v = alpha_beta(&cl, prof - 1, -BIG - 1, BIG + 1, 0);
+                int v = alpha_beta(&cl, prof - 1, meilleur, BIG + 1, 0);
                 free(cl.labyrinth);
                 if (v > meilleur) { meilleur = v; t = types[i]; idx = indices[i]; rot = r; }
             }
