@@ -347,7 +347,9 @@ int main(int argc, char** argv) {
         turn++;
     }
 
-    if (ended == WINNING_MOVE) printf("ZabZabIA a gagne !\n");
+    int notreCoup = ((turn - 1) % 2 == lab.me);
+    int gagne = notreCoup ? (ended == WINNING_MOVE) : (ended == LOSING_MOVE);
+    if (gagne) printf("ZabZabIA a gagne !\n");
     else printf("ZabZabIA a perdu : %s\n", msg);
 
     closeConnection();
