@@ -5,7 +5,7 @@
 #include <time.h>
 
 #define BIG 1000000
-#define TIME_LIMIT 4
+#define TIME_LIMIT 2
 #define W_TRESOR 10000
 #define W_MUR 60
 
