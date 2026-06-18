@@ -317,45 +317,51 @@ int main(int argc, char** argv) {
     int  sizeX, sizeY;
     char move[256], msg[256];
 
-    connectToServer("localhost", 1234, "ZabZabIA");
-    waitForLabyrinth("", labyrinthName, &sizeX, &sizeY);
+    connectToServer("localhost", 1234, "ZabZabIA_DEPALLE");
 
-    char* labyData = malloc((sizeX * sizeY + 5) * 11 * sizeof(char));
+    while (1) {
 
-    t_labyrinth lab;
-    init_labyrinth(&lab, sizeX, sizeY, labyData);
+        waitForLabyrinth("", labyrinthName, &sizeX, &sizeY);
 
-    printLabyrinth();
+        /* La taille peut changer d'un match a l'autre : on (re)alloue ici */
+        char* labyData = malloc((sizeX * sizeY + 5) * 11 * sizeof(char));
 
-    int turn = 0;
-    t_return_code ended = NORMAL_MOVE;
+        t_labyrinth lab;
+        init_labyrinth(&lab, sizeX, sizeY, labyData);
 
-    while (ended == NORMAL_MOVE) {
+        printLabyrinth();
 
-        if (turn % 2 == lab.me) {            /* Notre tour */
-            ended = PlayMove(&lab, move, msg);
-            if (ended != LOSING_MOVE)
-                update_labyrinth(&lab, move, msg, 0);
-        } else {                             /* Tour de l'adversaire */
-            ended = getMove(move, msg);
-            if (ended != LOSING_MOVE)
-                update_labyrinth(&lab, move, msg, 1);
+        int turn = 0;
+        t_return_code ended = NORMAL_MOVE;
+
+        while (ended == NORMAL_MOVE) {
+
+            if (turn % 2 == lab.me) { /* Notre tour */
+                ended = PlayMove(&lab, move, msg);
+                if (ended != LOSING_MOVE)
+                    update_labyrinth(&lab, move, msg, 0);
+            } else { /* Tour de l'adversaire */
+                ended = getMove(move, msg);
+                if (ended != LOSING_MOVE)
+                    update_labyrinth(&lab, move, msg, 1);
+            }
+
+            if (ended == NORMAL_MOVE) printLabyrinth();
+
+            turn++;
         }
 
-        if (ended == NORMAL_MOVE) printLabyrinth();
+        int notreCoup = ((turn - 1) % 2 == lab.me);
+        int gagne = notreCoup ? (ended == WINNING_MOVE) : (ended == LOSING_MOVE);
+        if (gagne) printf("ZabZabIA a gagne !\n");
+        else printf("ZabZabIA a perdu : %s\n", msg);
 
-        turn++;
+        /* Fin du match : on libere et on repart attendre un adversaire */
+        free_labyrinth(&lab);
+        free(labyData);
     }
 
-    int notreCoup = ((turn - 1) % 2 == lab.me);
-    int gagne = notreCoup ? (ended == WINNING_MOVE) : (ended == LOSING_MOVE);
-    if (gagne) printf("ZabZabIA a gagne !\n");
-    else printf("ZabZabIA a perdu : %s\n", msg);
-
-    closeConnection();
-    free_labyrinth(&lab);
-    free(labyData);
-
+    closeConnection(); /* Jamais atteint, mais on reste poli */
     return 0;
 }
 
