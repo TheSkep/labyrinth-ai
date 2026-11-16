@@ -6,8 +6,8 @@
 
 #define BIG 1000000
 #define TIME_LIMIT 4
-#define W_TREASURE 10000
-#define W_WALL 60
+#define W_TREASURE 10000   /* one treasure outweighs any wall count on the board */
+#define W_WALL 60          /* per wall between a pawn and its treasure */
 
 static clock_t deadline;
 
@@ -79,6 +79,7 @@ static int evaluate(t_labyrinth* lab) {
     int my_pos = find_treasure(lab, lab->myTreasure);
     int opp_pos = find_treasure(lab, lab->oppTreasure);
     if (my_pos != -1) score -= W_WALL * wall_cost_bfs(lab, lab->GoodGuy.x, lab->GoodGuy.y, my_pos);
+    /* The opponent's walls count 1.4x ours: blocking is worth a bit more than advancing */
     if (opp_pos != -1) score += 1.4 * W_WALL * wall_cost_bfs(lab, lab->BadGuy.x,  lab->BadGuy.y,  opp_pos);
     return score;
 }
