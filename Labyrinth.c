@@ -311,7 +311,7 @@ static t_return_code PlayMove(t_labyrinth* lab, char* move, char* msg) {
 
 // ------------------------------------------------------- //
 
-int main(int argc, char** argv) {
+int main(void) {
 
     char labyrinthName[50];
     int  sizeX, sizeY;
