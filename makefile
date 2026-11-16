@@ -28,7 +28,8 @@ Labyrinth: $(COMMON) Labyrinth.o ZabZabAI.o
 	$(CC) $(CCFLAGS) -o $@ $^
 
 # extra rules
+.PHONY: all debug clean mrproper
 clean:
 	rm -f *.o
-mproper:
+mrproper:
 	rm -f Labyrinth *.o
