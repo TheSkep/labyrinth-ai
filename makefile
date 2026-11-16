@@ -11,15 +11,15 @@ all: Labyrinth
 # header dependencies
 clientAPI.o: clientAPI.h
 labyrinthAPI.o: clientAPI.h labyrinthAPI.h
-Labyrinth.o: labyrinthAPI.h Labyrinth.h ZabZabIA.h
-ZabZabIA.o: labyrinthAPI.h Labyrinth.h ZabZabIA.h
+Labyrinth.o: labyrinthAPI.h Labyrinth.h ZabZabAI.h
+ZabZabAI.o: labyrinthAPI.h Labyrinth.h ZabZabAI.h
 
 # generic compile rule
 %.o: %.c
 	$(CC) $(CCFLAGS) -o $@ -c $<
 
-# the program: main + PlayMove (Labyrinth.c) + alpha-beta (ZabZabIA.c)
-Labyrinth: $(COMMON) Labyrinth.o ZabZabIA.o
+# the program: main + PlayMove (Labyrinth.c) + alpha-beta (ZabZabAI.c)
+Labyrinth: $(COMMON) Labyrinth.o ZabZabAI.o
 	$(CC) $(CCFLAGS) -o $@ $^
 
 # extra rules

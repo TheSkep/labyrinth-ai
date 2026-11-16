@@ -1,5 +1,5 @@
-#ifndef ZABZABIA_H
-#define ZABZABIA_H
+#ifndef ZABZABAI_H
+#define ZABZABAI_H
 
 #include "Labyrinth.h"
 

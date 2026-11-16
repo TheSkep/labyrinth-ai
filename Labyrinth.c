@@ -1,6 +1,6 @@
 #include "labyrinthAPI.h"
 #include "Labyrinth.h"
-#include "ZabZabIA.h"
+#include "ZabZabAI.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -317,7 +317,7 @@ int main(int argc, char** argv) {
     int  sizeX, sizeY;
     char move[256], msg[256];
 
-    connectToServer("localhost", 1234, "ZabZabIA_DEPALLE");
+    connectToServer("localhost", 1234, "ZabZabAI_DEPALLE");
 
     while (1) {
 
@@ -353,8 +353,8 @@ int main(int argc, char** argv) {
 
         int our_move = ((turn - 1) % 2 == lab.me);
         int won = our_move ? (ended == WINNING_MOVE) : (ended == LOSING_MOVE);
-        if (won) printf("ZabZabIA won!\n");
-        else printf("ZabZabIA lost: %s\n", msg);
+        if (won) printf("ZabZabAI won!\n");
+        else printf("ZabZabAI lost: %s\n", msg);
 
         /* End of the match: free and wait for the next opponent */
         free_labyrinth(&lab);
