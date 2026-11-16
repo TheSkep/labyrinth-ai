@@ -1,28 +1,28 @@
-# options de compilation
+# compiler options
 CC = gcc
 CCFLAGS = -Wall -fsanitize=address -fsanitize=undefined -fsanitize=leak
 
-# fichiers communs (API)
+# shared files (API)
 COMMON = clientAPI.o labyrinthAPI.o
 
-# regle initiale : on construit le programme
+# default rule: build the program
 all: Labyrinth
 
-# dependance des .h
+# header dependencies
 clientAPI.o: clientAPI.h
 labyrinthAPI.o: clientAPI.h labyrinthAPI.h
 Labyrinth.o: labyrinthAPI.h Labyrinth.h ZabZabIA.h
 ZabZabIA.o: labyrinthAPI.h Labyrinth.h ZabZabIA.h
 
-# regle generique de compilation
+# generic compile rule
 %.o: %.c
 	$(CC) $(CCFLAGS) -o $@ -c $<
 
-# le programme : main + PlayMove (Labyrinth.c) + alpha-beta (ZabZabIA.c)
+# the program: main + PlayMove (Labyrinth.c) + alpha-beta (ZabZabIA.c)
 Labyrinth: $(COMMON) Labyrinth.o ZabZabIA.o
 	$(CC) $(CCFLAGS) -o $@ $^
 
-# regles supplementaires
+# extra rules
 clean:
 	rm -f *.o
 mproper:

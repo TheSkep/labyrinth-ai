@@ -42,11 +42,11 @@ typedef struct {
 
 // ------------------------------------------------------- //
 
-/* Accès aux tuiles */
+/* Tile access */
 int     tile_index(const t_labyrinth* lab, int x, int y);
 t_tile* tile_at(t_labyrinth* lab, int x, int y);
 
-/* Règles du jeu */
+/* Game rules */
 t_tile rotate_tile(t_tile t, int nb);
 void   apply_insertion(t_labyrinth* lab, int type, int index, int rotation);
 int    are_connected(t_labyrinth* lab, int x1, int y1, int x2, int y2);
@@ -54,11 +54,11 @@ void   compute_reachable(t_labyrinth* lab, int sx, int sy, int* reachable, int* 
 int    find_treasure(const t_labyrinth* lab, int treasure);
 int    next_treasure(int player, int current);
 
-/* Initialisation et mise à jour */
+/* Setup and updates */
 int  init_labyrinth(t_labyrinth* lab, int sizeX, int sizeY, char* labyData);
 void update_labyrinth(t_labyrinth* lab, const char* move, const char* msg, int who);
 
-/* Utilitaires */
+/* Utilities */
 void print_labyrinth_data(const t_labyrinth* lab);
 void free_labyrinth(t_labyrinth* lab);
 
