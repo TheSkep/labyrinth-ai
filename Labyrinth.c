@@ -45,7 +45,7 @@ void apply_insertion(t_labyrinth* lab, int type, int index, int rotation) {
 
     switch (type) {
 
-        case INSERT_LINE_LEFT: /* On glisse la ligne vers la droite */
+        case INSERT_LINE_LEFT: /* Shift the row right */
             popped = *tile_at(lab, sx - 1, index);
             for (int x = sx - 1; x >= 1; x--)
                 *tile_at(lab, x, index) = *tile_at(lab, x - 1, index);
@@ -54,11 +54,11 @@ void apply_insertion(t_labyrinth* lab, int type, int index, int rotation) {
             for (int p = 0; p < 2; p++)
                 if (players[p]->y == index) {
                     players[p]->x++;
-                    if (players[p]->x == sx) players[p]->x = 0; /* Pion expulsé */
+                    if (players[p]->x == sx) players[p]->x = 0; /* Pawn pushed off: wraps around */
                 }
             break;
 
-        case INSERT_LINE_RIGHT: /* On glisse la ligne vers la gauche */
+        case INSERT_LINE_RIGHT: /* Shift the row left */
             popped = *tile_at(lab, 0, index);
             for (int x = 0; x <= sx - 2; x++)
                 *tile_at(lab, x, index) = *tile_at(lab, x + 1, index);
@@ -67,11 +67,11 @@ void apply_insertion(t_labyrinth* lab, int type, int index, int rotation) {
             for (int p = 0; p < 2; p++)
                 if (players[p]->y == index) {
                     players[p]->x--;
-                    if (players[p]->x < 0) players[p]->x = sx - 1; /* Pion expulsé */
+                    if (players[p]->x < 0) players[p]->x = sx - 1; /* Pawn pushed off: wraps around */
                 }
             break;
 
-        case INSERT_COL_TOP:    /* On glisse la colonne vers le bas */
+        case INSERT_COL_TOP:    /* Shift the column down */
             popped = *tile_at(lab, index, sy - 1);
             for (int y = sy - 1; y >= 1; y--)
                 *tile_at(lab, index, y) = *tile_at(lab, index, y - 1);
@@ -80,11 +80,11 @@ void apply_insertion(t_labyrinth* lab, int type, int index, int rotation) {
             for (int p = 0; p < 2; p++)
                 if (players[p]->x == index) {
                     players[p]->y++;
-                    if (players[p]->y == sy) players[p]->y = 0; /* Pion expulsé */
+                    if (players[p]->y == sy) players[p]->y = 0; /* Pawn pushed off: wraps around */
                 }
             break;
 
-        case INSERT_COL_BOTTOM: /* On glisse la colonne vers le haut */
+        case INSERT_COL_BOTTOM: /* Shift the column up */
             popped = *tile_at(lab, index, 0);
             for (int y = 0; y <= sy - 2; y++)
                 *tile_at(lab, index, y) = *tile_at(lab, index, y + 1);
@@ -93,17 +93,17 @@ void apply_insertion(t_labyrinth* lab, int type, int index, int rotation) {
             for (int p = 0; p < 2; p++)
                 if (players[p]->x == index) {
                     players[p]->y--;
-                    if (players[p]->y < 0) players[p]->y = sy - 1; /* Pion expulsé */
+                    if (players[p]->y < 0) players[p]->y = sy - 1; /* Pawn pushed off: wraps around */
                 }
             break;
 
         default:
-            return; /* Coup invalide : rien à faire */
+            return; /* Invalid move: nothing to do */
     }
 
-    lab->extra     = popped; /* La tuile expulsée devient la nouvelle extra */
+    lab->extra     = popped; /* The pushed-out tile becomes the spare */
     lab->lastType  = type;
-    lab->lastIndex = index; /* On recopie aussi le trésor */
+    lab->lastIndex = index; /* Remembered so the reverse push is banned next turn */
 }
 
 // ------------------------------------------------------- //
@@ -183,14 +183,14 @@ int next_treasure(int player, int current) {
 
 int init_labyrinth(t_labyrinth* lab, int sizeX, int sizeY, char* labyData) {
 
-    int me = getLabyrinth(labyData); /* Vaut 0 si on commence, 1 sinon */
+    int me = getLabyrinth(labyData); /* 0 if we start, 1 otherwise */
 
     lab->sizeX = sizeX;
     lab->sizeY = sizeY;
     lab->me    = me;
     lab->labyrinth = malloc(sizeof(t_tile) * sizeX * sizeY);
 
-    /* On lit les sizeX*sizeY tuiles du plateau */
+    /* Read the sizeX*sizeY board tiles */
     int offset = 0;
     for (int i = 0; i < sizeX * sizeY; i++) {
         int consumed;
@@ -204,7 +204,7 @@ int init_labyrinth(t_labyrinth* lab, int sizeX, int sizeY, char* labyData) {
         offset += consumed;
     }
 
-    /* Puis la tuile supplémentaire, juste après */
+    /* Then the spare tile, right after */
     sscanf(labyData + offset, "%d %d %d %d %d",
            &lab->extra.north,
            &lab->extra.east,
@@ -234,7 +234,7 @@ int init_labyrinth(t_labyrinth* lab, int sizeX, int sizeY, char* labyData) {
 
 void update_labyrinth(t_labyrinth* lab, const char* move, const char* msg, int who) {
 
-    /* On lit tous les entiers du coup */
+    /* Read every integer of the move */
     int vals[128];
     int n = 0, consumed;
     const char* p = move;
@@ -244,13 +244,13 @@ void update_labyrinth(t_labyrinth* lab, const char* move, const char* msg, int w
         p += consumed;
     }
 
-    if (n < 3) return; /* Coup vraiment mal formé : rien à faire */
+    if (n < 3) return; /* Malformed move: nothing to do */
 
     int type     = vals[0];
     int index    = vals[1];
     int rotation = vals[2];
 
-    /* On applique l'insertion */
+    /* Apply the insertion */
     apply_insertion(lab, type, index, rotation);
 
     if (n >= 5) {
@@ -260,7 +260,7 @@ void update_labyrinth(t_labyrinth* lab, const char* move, const char* msg, int w
         else          { lab->BadGuy.x  = dx; lab->BadGuy.y  = dy; }
     }
 
-    /* Le serveur renvoie la nouvelle tuile extra et le prochain trésor */
+    /* The server sends back the new spare tile and the next treasure */
     int en, ee, es, ew, et, nextItem;
     if (msg && sscanf(msg, "%d %d %d %d %d %d", &en, &ee, &es, &ew, &et, &nextItem) == 6) {
 
@@ -288,7 +288,7 @@ void print_labyrinth_data(const t_labyrinth* lab) {
     printf("extra : %d%d%d%d %d\n",
            lab->extra.north, lab->extra.east, lab->extra.south,
            lab->extra.west, lab->extra.treasure);
-    printf("nous (%d,%d) cherchons %d | adv (%d,%d) cherche %d\n",
+    printf("us (%d,%d) looking for %d | opp (%d,%d) looking for %d\n",
            lab->GoodGuy.x, lab->GoodGuy.y, lab->myTreasure,
            lab->BadGuy.x,  lab->BadGuy.y,  lab->oppTreasure);
 }
@@ -323,7 +323,7 @@ int main(int argc, char** argv) {
 
         waitForLabyrinth("", labyrinthName, &sizeX, &sizeY);
 
-        /* La taille peut changer d'un match a l'autre : on (re)alloue ici */
+        /* The size can change between matches: (re)allocate here */
         char* labyData = malloc((sizeX * sizeY + 5) * 11 * sizeof(char));
 
         t_labyrinth lab;
@@ -336,11 +336,11 @@ int main(int argc, char** argv) {
 
         while (ended == NORMAL_MOVE) {
 
-            if (turn % 2 == lab.me) { /* Notre tour */
+            if (turn % 2 == lab.me) { /* Our turn */
                 ended = PlayMove(&lab, move, msg);
                 if (ended != LOSING_MOVE)
                     update_labyrinth(&lab, move, msg, 0);
-            } else { /* Tour de l'adversaire */
+            } else { /* Opponent's turn */
                 ended = getMove(move, msg);
                 if (ended != LOSING_MOVE)
                     update_labyrinth(&lab, move, msg, 1);
@@ -351,17 +351,17 @@ int main(int argc, char** argv) {
             turn++;
         }
 
-        int notreCoup = ((turn - 1) % 2 == lab.me);
-        int gagne = notreCoup ? (ended == WINNING_MOVE) : (ended == LOSING_MOVE);
-        if (gagne) printf("ZabZabIA a gagne !\n");
-        else printf("ZabZabIA a perdu : %s\n", msg);
+        int our_move = ((turn - 1) % 2 == lab.me);
+        int won = our_move ? (ended == WINNING_MOVE) : (ended == LOSING_MOVE);
+        if (won) printf("ZabZabIA won!\n");
+        else printf("ZabZabIA lost: %s\n", msg);
 
-        /* Fin du match : on libere et on repart attendre un adversaire */
+        /* End of the match: free and wait for the next opponent */
         free_labyrinth(&lab);
         free(labyData);
     }
 
-    closeConnection(); /* Jamais atteint, mais on reste poli */
+    closeConnection(); /* Never reached, but polite */
     return 0;
 }
 
