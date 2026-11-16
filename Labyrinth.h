@@ -27,7 +27,7 @@ typedef struct {
 } t_player;
 
 typedef struct {
-    t_tile*  labyrinth; 
+    t_tile*  labyrinth;
     t_tile   extra;
     t_player GoodGuy;
     t_player BadGuy;
