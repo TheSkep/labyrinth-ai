@@ -1,12 +1,17 @@
-# compiler options
+# compiler options; `make debug` adds the sanitizers
 CC = gcc
-CCFLAGS = -Wall -fsanitize=address -fsanitize=undefined -fsanitize=leak
+CCFLAGS = -Wall -O2
+DEBUGFLAGS = -g -fsanitize=address -fsanitize=undefined -fsanitize=leak
 
 # shared files (API)
 COMMON = clientAPI.o labyrinthAPI.o
 
 # default rule: build the program
 all: Labyrinth
+
+# same program with the sanitizers, for testing (run `make mrproper` first)
+debug: CCFLAGS += $(DEBUGFLAGS)
+debug: Labyrinth
 
 # header dependencies
 clientAPI.o: clientAPI.h

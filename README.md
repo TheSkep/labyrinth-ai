@@ -54,8 +54,8 @@ make
 
 The program connects to a game server, `localhost` on port 1234 by default
 (set in `main()` in `Labyrinth.c`), and plays one match after another. The
-server was the contest's own and is not included here. The build enables
-AddressSanitizer and UndefinedBehaviorSanitizer.
+server was the contest's own and is not included here. `make debug` builds
+the same program with AddressSanitizer and UndefinedBehaviorSanitizer.
 
 ## Licence
 
