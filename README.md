@@ -6,9 +6,9 @@ contest in 2026.
 
 ## Result
 
-Finished between 3rd and 5th of 50 programs in the contest's tournament. To
-let the tournament finish on schedule, it was played at 2 seconds per move,
-half the time the AI normally gets.
+Semi-finalist (top 4 of 50 programs) in the contest's single-elimination
+tournament. To let the tournament finish on schedule, it was played at 2
+seconds per move, half the time the AI normally gets.
 
 ## The game
 
